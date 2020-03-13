@@ -1,5 +1,7 @@
 package com.github.tommyt0mmy.rides;
 
+import com.github.tommyt0mmy.rides.commands.RidesCommand;
+import com.github.tommyt0mmy.rides.events.RidesGUIEvents;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
@@ -20,6 +22,8 @@ public class Rides extends JavaPlugin {
     public void onEnable() {
         setInstance(this);
 
+        loadCommands();
+        loadEvents();
     }
 
     public void onDisable() {
@@ -27,11 +31,11 @@ public class Rides extends JavaPlugin {
     }
 
     private void loadCommands() {
-
+        getCommand("rides").setExecutor(new RidesCommand());
     }
 
     private void loadEvents() {
-
+        getServer().getPluginManager().registerEvents(new RidesGUIEvents(), this);
     }
 
 }

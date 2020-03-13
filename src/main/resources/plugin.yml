@@ -4,4 +4,8 @@ description: A roleplay plugin that allows players to buy and mount horses.
 author: Tommy_T0mmY
 main: com.github.tommyt0mmy.rides.Rides
 prefix: Rides
-api-version: 1.13
+api-version: 1.14
+commands:
+  rides:
+    description: Lists every owned horse
+    usage: /<command>
