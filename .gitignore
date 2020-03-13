@@ -1,3 +1,9 @@
-.idea
-Rides-plugin.iml
-.idea/misc.xml
+/bin/
+.classpath
+.settings
+target/
+Spigot/
+*.iml
+.idea/
+.project/
+src/test
