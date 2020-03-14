@@ -22,6 +22,7 @@ public class Rides extends JavaPlugin {
     public void onEnable() {
         setInstance(this);
 
+        getDataFolder().mkdir();
         loadCommands();
         loadEvents();
     }
