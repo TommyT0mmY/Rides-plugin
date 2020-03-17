@@ -24,10 +24,8 @@ public class OwnerData
         horses = new ArrayList<>();
         JsonArray horsesJsonArray = jsonobject.getAsJsonArray("horses");
 
-        Iterator iterator = horsesJsonArray.iterator();
-        while (iterator.hasNext())
-        {
-            UUID currUuid = UUID.fromString((String) iterator.next());
+        for (com.google.gson.JsonElement jsonElement : horsesJsonArray) {
+            UUID currUuid = UUID.fromString(jsonElement.getAsString());
             horses.add(currUuid);
         }
     }

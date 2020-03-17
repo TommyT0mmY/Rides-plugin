@@ -1,7 +1,9 @@
 package com.github.tommyt0mmy.rides.storing;
 
 import com.github.tommyt0mmy.rides.Rides;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -32,10 +34,10 @@ public class RidesDatabase
                 file_json_object.add("horses", new JsonArray());
                 file_json_object.add("owners", new JsonArray());
 
-                Writer writer = new FileWriter(file);
-                Gson gson = new GsonBuilder().create();
-                gson.toJson(file_json_object, writer);
-                writer.close();
+                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+                bw.write(file_json_object.toString());
+                bw.flush();
+                bw.close();
             }
             else
             {
@@ -73,19 +75,22 @@ public class RidesDatabase
 
         try
         {
-            JsonParser parser = new JsonParser();
-            Reader reader = new FileReader(file);
-            Writer writer = new FileWriter(file);
+            BufferedReader br = new BufferedReader(new FileReader(file));
 
-            JsonObject file_json_object = (JsonObject) parser.parse(reader);
+            String readed = br.readLine();
+            br.close();
+
+            JsonObject file_json_object = new JsonParser().parse(readed).getAsJsonObject();
+
             JsonArray horses_array = file_json_object.getAsJsonArray("horses");
             JsonObject new_horse_object = horsedata.toJsonObject();
             horses_array.add(new_horse_object);
+            file_json_object.add("horses", horses_array);
 
-            Gson gson = new GsonBuilder().create();
-            gson.toJson(new_horse_object, writer);
-            writer.close();
-            reader.close();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            bw.write(file_json_object.toString());
+            bw.flush();
+            bw.close();
         } catch(IOException e) {e.printStackTrace();}
     }
 
@@ -95,19 +100,22 @@ public class RidesDatabase
 
         try
         {
-            JsonParser parser = new JsonParser();
-            Reader reader = new FileReader(file);
-            Writer writer = new FileWriter(file);
+            BufferedReader br = new BufferedReader(new FileReader(file));
 
-            JsonObject file_json_object = (JsonObject) parser.parse(reader);
+            String readed = br.readLine();
+            br.close();
+
+            JsonObject file_json_object = new JsonParser().parse(readed).getAsJsonObject();
+
             JsonArray owners_array = file_json_object.getAsJsonArray("owners");
             JsonObject new_owner_object = ownerdata.toJsonObject();
             owners_array.add(new_owner_object);
+            file_json_object.add("owners", owners_array);
 
-            Gson gson = new GsonBuilder().create();
-            gson.toJson(new_owner_object, writer);
-            writer.close();
-            reader.close();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            bw.write(file_json_object.toString());
+            bw.flush();
+            bw.close();
         } catch(IOException e) {e.printStackTrace();}
     }
 

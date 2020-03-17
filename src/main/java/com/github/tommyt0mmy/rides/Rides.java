@@ -2,6 +2,7 @@ package com.github.tommyt0mmy.rides;
 
 import com.github.tommyt0mmy.rides.commands.RidesCommand;
 import com.github.tommyt0mmy.rides.events.RidesGUIEvents;
+import com.github.tommyt0mmy.rides.storing.HorseData;
 import com.github.tommyt0mmy.rides.storing.OwnerData;
 import com.github.tommyt0mmy.rides.storing.RidesDatabase;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,7 +34,9 @@ public class Rides extends JavaPlugin {
         ArrayList<UUID> arl = new ArrayList<>();
         arl.add(UUID.randomUUID());
         arl.add(UUID.randomUUID());
+
         database.addOwner(new OwnerData(UUID.randomUUID(), arl));
+        database.addHorse(new HorseData("John", UUID.randomUUID(), 10, (byte) 1));
 
         loadCommands();
         loadEvents();
