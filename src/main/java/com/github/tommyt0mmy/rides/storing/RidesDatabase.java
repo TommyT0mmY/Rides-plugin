@@ -119,10 +119,24 @@ public class RidesDatabase
         } catch(IOException e) {e.printStackTrace();}
     }
 
-    public OwnerData getOwnerByUUID(UUID ownerUuid) {
-        for (OwnerData currOwner : ownersList) {
-            if (currOwner.getUuid().equals(ownerUuid)) {
+    public OwnerData getOwnerByUUID(UUID ownerUuid)
+    {
+        for (OwnerData currOwner : ownersList)
+        {
+            if (currOwner.getUuid().equals(ownerUuid))
+            {
                 return currOwner;
+            }
+        }
+        return null;
+    }
+    public HorseData getHorseByUUID(UUID horseUuid)
+    {
+        for (HorseData currHorse : horsesList)
+        {
+            if (currHorse.getUuid().equals(horseUuid))
+            {
+                return currHorse;
             }
         }
         return null;

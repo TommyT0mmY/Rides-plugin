@@ -2,13 +2,12 @@ package com.github.tommyt0mmy.rides;
 
 import com.github.tommyt0mmy.rides.commands.RidesCommand;
 import com.github.tommyt0mmy.rides.events.RidesGUIEvents;
-import com.github.tommyt0mmy.rides.storing.HorseData;
-import com.github.tommyt0mmy.rides.storing.OwnerData;
 import com.github.tommyt0mmy.rides.storing.RidesDatabase;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.awt.image.AreaAveragingScaleFilter;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -17,6 +16,7 @@ public class Rides extends JavaPlugin {
     private static Rides instance;
     public Logger console = getLogger();
     public RidesDatabase database;
+    public Map<Player, UUID> spawnedHorses = new HashMap<>();
 
     public static Rides getInstance() {
         return instance;
@@ -26,23 +26,18 @@ public class Rides extends JavaPlugin {
         Rides.instance = instance;
     }
 
-    public void onEnable() {
+    public void onEnable()
+    {
         setInstance(this);
         getDataFolder().mkdir();
 
         database = new RidesDatabase();
-        ArrayList<UUID> arl = new ArrayList<>();
-        arl.add(UUID.randomUUID());
-        arl.add(UUID.randomUUID());
-
-        database.addOwner(new OwnerData(UUID.randomUUID(), arl));
-        database.addHorse(new HorseData("John", UUID.randomUUID(), 10, (byte) 1));
 
         loadCommands();
         loadEvents();
     }
 
-    public void onDisable() {
+    public void onDisable(){
 
     }
 
