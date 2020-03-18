@@ -1,4 +1,4 @@
-package com.github.tommyt0mmy.rides.events;
+package com.github.tommyt0mmy.rides.enums;
 
 public enum Permissions
 {

@@ -2,7 +2,7 @@ package com.github.tommyt0mmy.rides.commands;
 
 import com.github.tommyt0mmy.rides.Rides;
 import com.github.tommyt0mmy.rides.enums.RidesItemKey;
-import com.github.tommyt0mmy.rides.events.Permissions;
+import com.github.tommyt0mmy.rides.enums.Permissions;
 import com.github.tommyt0mmy.rides.storing.HorseData;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
