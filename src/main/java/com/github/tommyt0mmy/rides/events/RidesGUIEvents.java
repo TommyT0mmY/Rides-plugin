@@ -6,9 +6,9 @@ import com.github.tommyt0mmy.rides.storing.HorseData;
 import com.github.tommyt0mmy.rides.storing.OwnerData;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -93,6 +93,7 @@ public class RidesGUIEvents implements Listener
             Material.GHAST_SPAWN_EGG,
             Material.LLAMA_SPAWN_EGG,
             Material.RABBIT_SPAWN_EGG,
+            Material.DONKEY_SPAWN_EGG,
             Material.ENDERMAN_SPAWN_EGG,
             Material.SILVERFISH_SPAWN_EGG,
             Material.MULE_SPAWN_EGG
@@ -140,7 +141,7 @@ public class RidesGUIEvents implements Listener
         };
 
         Horse.Color color = colors[horsedata.getSkin() % 7];
-        Horse.Style style = styles[horsedata.getSkin() % 5];
+        Horse.Style style = styles[horsedata.getSkin() / 7];
 
         Horse spawnedHorse = (Horse) world.spawnEntity(location, EntityType.HORSE);
         spawnedHorse.setColor(color);
@@ -151,6 +152,18 @@ public class RidesGUIEvents implements Listener
         spawnedHorse.setCustomNameVisible(true);
         spawnedHorse.setOwner(owner);
         spawnedHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horsedata.getSpeed());
+
+        if (RidesClass.spawnedHorses.get(owner) != null)
+        {
+            UUID oldHorseUuid = RidesClass.spawnedHorses.get(owner);
+            LivingEntity oldHorse = (LivingEntity) Bukkit.getServer().getEntity(oldHorseUuid);
+
+            oldHorse.teleport(new Location(oldHorse.getWorld(), 0, -10, 0));
+            oldHorse.setSilent(true);
+            oldHorse.setHealth(0);
+            //TODO send message
+        }
+        RidesClass.spawnedHorses.put(owner, spawnedHorse.getUniqueId());
 
         return spawnedHorse;
     }
