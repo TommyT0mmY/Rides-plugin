@@ -1,0 +1,5 @@
+ingame_prefix: "[Rides]"
+
+messages:
+  only_players_command: "Only players can execute this command"
+  invalid_permissions: "Invalid Permissions!"
