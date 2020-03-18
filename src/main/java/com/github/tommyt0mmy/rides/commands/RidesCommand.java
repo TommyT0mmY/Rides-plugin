@@ -5,6 +5,7 @@ import com.github.tommyt0mmy.rides.enums.RidesItemKey;
 import com.github.tommyt0mmy.rides.events.Permissions;
 import com.github.tommyt0mmy.rides.storing.HorseData;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -33,7 +34,7 @@ public class RidesCommand implements CommandExecutor
 
         if (!(sender instanceof Player))
         {
-            //TODO send only players message
+            sender.sendMessage(RidesClass.messages.getChatMessage("only_players_command"));
             return true;
         }
 
@@ -47,14 +48,14 @@ public class RidesCommand implements CommandExecutor
 
         if (!p.hasPermission(Permissions.OPEN_GUI.getNode()))
         {
-            //TODO send error message
+            p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "invalid_permissions"));
             return true;
         }
 
         //Opening GUI
-        Inventory inv = Bukkit.createInventory(p, 27, "§eRides GUI");
-        inv.setItem(10, customGUIitem(Material.HORSE_SPAWN_EGG, RidesItemKey.HORSE_LIST_BUTTON, "§aSpawn Horse", "Lists every horse", "possessed by you"));
-        inv.setItem(16, customGUIitem(Material.BOOK, RidesItemKey.HELP_BUTTON, "§aHelp", "For help digit", "/rideshelp"));
+        Inventory inv = Bukkit.createInventory(p, 27, RidesClass.messages.getGuiTitle("main_page"));
+        inv.setItem(10, customGUIitem(Material.HORSE_SPAWN_EGG, RidesItemKey.HORSE_LIST_BUTTON, RidesClass.messages.getGuiButtonName("select_horse"), RidesClass.messages.getGuiButtonLore("select_horse")));
+        inv.setItem(16, customGUIitem(Material.BOOK, RidesItemKey.HELP_BUTTON, RidesClass.messages.getGuiButtonName("help"), RidesClass.messages.getGuiButtonLore("help")));
         if (RidesClass.spawnedHorses.get(p) != null)
         {
             NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
@@ -73,7 +74,12 @@ public class RidesCommand implements CommandExecutor
                 {
                     UUID rides_uuid = UUID.fromString(UuidString);
                     HorseData horsedata = RidesClass.database.getHorseByUUID(rides_uuid);
-                    inv.setItem(13, customGUIitem(Material.BARRIER, RidesItemKey.REMOVE_HORSE, "§cSend back", "send " + horsedata.getName(), "to the stable"));
+
+                    ArrayList<String> lore = RidesClass.messages.getGuiButtonLore("send_back_horse");
+                    for (int i = 0; i < lore.size(); ++i)
+                        lore.set(i, lore.get(i).replaceAll("<HORSE_NAME>", horsedata.getName()));
+
+                    inv.setItem(13, customGUIitem(Material.BARRIER, RidesItemKey.REMOVE_HORSE, RidesClass.messages.getGuiButtonName("send_back_horse"), lore));
                 }
             }
         }
@@ -82,18 +88,16 @@ public class RidesCommand implements CommandExecutor
         return true;
     }
 
-    private ItemStack customGUIitem(Material material, RidesItemKey code, String name, String...lore)
+    private ItemStack customGUIitem(Material material, RidesItemKey code, String name, ArrayList<String> lore)
     {
         ItemStack itemstack = new ItemStack(material);
         ItemMeta meta = itemstack.getItemMeta();
         NamespacedKey key = new NamespacedKey(RidesClass, "rides-key");
 
-        ArrayList<String> loreList = new ArrayList<>(Arrays.asList(lore));
-
         if (meta != null)
         {
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING , code.toString());
-            meta.setLore(loreList);
+            meta.setLore(lore);
             meta.setDisplayName(name);
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_POTION_EFFECTS);
         }

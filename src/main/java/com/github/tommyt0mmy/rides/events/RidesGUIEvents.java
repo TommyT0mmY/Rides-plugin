@@ -34,7 +34,7 @@ public class RidesGUIEvents implements Listener
 
         if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-        if (e.getView().getTitle().equals("§eRides GUI"))
+        if (e.getView().getTitle().equals(RidesClass.messages.getGuiTitle("main_page")))
         {
             e.setCancelled(true);
 
@@ -44,12 +44,12 @@ public class RidesGUIEvents implements Listener
             switch (itemKey)
             {
                 case HORSE_LIST_BUTTON:
-                    Inventory inv = Bukkit.createInventory(p, 45, "§eSelect An Horse");
+                    Inventory inv = Bukkit.createInventory(p, 45, RidesClass.messages.getGuiTitle("select_horse"));
                     OwnerData ownerdata = RidesClass.database.getOwnerByUUID(p.getUniqueId());
                     if (ownerdata == null)
                     {
                         p.closeInventory();
-                        //TODO send message
+                        p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "no_horse_possessed"));
                         return;
                     }
 
@@ -57,7 +57,7 @@ public class RidesGUIEvents implements Listener
                     if (horsesUuid == null)
                     {
                         p.closeInventory();
-                        //TODO send message
+                        p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "no_horse_possessed"));
                         return;
                     }
 
@@ -84,14 +84,14 @@ public class RidesGUIEvents implements Listener
                     Inventory newInv = p.getOpenInventory().getTopInventory();
                     newInv.setItem(13, new ItemStack(Material.AIR));
                     p.openInventory(newInv);
-                    //TODO send message
+                    p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.GREEN, "horse_sent_back"));
                     break;
                 case HELP_BUTTON:
                     //TODO send message
                     break;
             }
         }
-        else if (e.getView().getTitle().equals("§eSelect An Horse"))
+        else if (e.getView().getTitle().equals(RidesClass.messages.getGuiTitle("select_horse")))
         {
             e.setCancelled(true);
             NamespacedKey key = new NamespacedKey(RidesClass, "uuid");
@@ -178,7 +178,7 @@ public class RidesGUIEvents implements Listener
             oldHorse.teleport(new Location(oldHorse.getWorld(), 0, -10, 0));
             oldHorse.setSilent(true);
             oldHorse.setHealth(0);
-            //TODO send message
+            owner.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.GREEN, "horse_replaced"));
         }
         RidesClass.spawnedHorses.put(owner, spawnedHorse.getUniqueId());
 

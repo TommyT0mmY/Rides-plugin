@@ -3,3 +3,21 @@ ingame_prefix: "[Rides]"
 messages:
   only_players_command: "Only players can execute this command"
   invalid_permissions: "Invalid Permissions!"
+  no_horse_possessed: "You don't own any horses"
+  horse_sent_back: "You sent your horse to the stail"
+  horse_replaced: "Your horse has been sent back to the stail"
+
+gui:
+  titles:
+    select_horse: '&eSelect An Horse'
+    main_page: '&eRides'
+  buttons:
+    select_horse:
+      title: '&eSelect An Horse'
+      lore: '&aA list of every horse possessed by you'
+    send_back_horse:
+      title: '&cSend Back'
+      lore: '&aSend <HORSE_NAME> to the stable'
+    help:
+      title: '&eHelp'
+      lore: '&aFor help digit /rideshelp'
