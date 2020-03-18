@@ -71,6 +71,21 @@ public class RidesGUIEvents implements Listener
                     p.openInventory(inv);
 
                     break;
+                case REMOVE_HORSE:
+                    UUID horseUuid = RidesClass.spawnedHorses.get(p);
+                    if (horseUuid == null)
+                        return;
+                    LivingEntity horse = (LivingEntity) Bukkit.getServer().getEntity(horseUuid);
+
+                    horse.teleport(new Location(horse.getWorld(), 0, -10, 0));
+                    horse.setSilent(true);
+                    horse.setHealth(0);
+                    RidesClass.spawnedHorses.remove(p);
+                    Inventory newInv = p.getOpenInventory().getTopInventory();
+                    newInv.setItem(13, new ItemStack(Material.AIR));
+                    p.openInventory(newInv);
+                    //TODO send message
+                    break;
                 case HELP_BUTTON:
                     //TODO send message
                     break;
@@ -152,6 +167,8 @@ public class RidesGUIEvents implements Listener
         spawnedHorse.setCustomNameVisible(true);
         spawnedHorse.setOwner(owner);
         spawnedHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horsedata.getSpeed());
+        NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
+        spawnedHorse.getPersistentDataContainer().set(uuidkey, PersistentDataType.STRING, horsedata.getUuid().toString());
 
         if (RidesClass.spawnedHorses.get(owner) != null)
         {
