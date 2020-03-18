@@ -2,6 +2,7 @@ package com.github.tommyt0mmy.rides.commands;
 
 import com.github.tommyt0mmy.rides.Rides;
 import com.github.tommyt0mmy.rides.enums.RidesItemKey;
+import com.github.tommyt0mmy.rides.events.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -37,7 +38,7 @@ public class RidesCommand implements CommandExecutor {
             return true;
         }
 
-        if (!p.hasPermission("rides.rides")) {
+        if (!p.hasPermission(Permissions.OPEN_GUI.getNode())) {
             //TODO send error message
             return true;
         }
