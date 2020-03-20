@@ -161,12 +161,14 @@ public class RidesGUIEvents implements Listener
         Horse spawnedHorse = (Horse) world.spawnEntity(location, EntityType.HORSE);
         spawnedHorse.setColor(color);
         spawnedHorse.setStyle(style);
-        spawnedHorse.setTamed(true);
         spawnedHorse.setAdult();
+        spawnedHorse.getInventory().setSaddle(new ItemStack(Material.SADDLE, 1));
+        spawnedHorse.setTamed(true);
         spawnedHorse.setCustomName(horsedata.getName());
         spawnedHorse.setCustomNameVisible(true);
         spawnedHorse.setOwner(owner);
         spawnedHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horsedata.getSpeed());
+        spawnedHorse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(horsedata.getHealth());
         NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
         spawnedHorse.getPersistentDataContainer().set(uuidkey, PersistentDataType.STRING, horsedata.getUuid().toString());
 
