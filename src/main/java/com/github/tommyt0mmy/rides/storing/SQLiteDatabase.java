@@ -51,17 +51,6 @@ public class SQLiteDatabase
                    + ");";
 
         executeStatement(sql);
-
-        // Owners table
-        sql = "CREATE TABLE IF NOT EXISTS owners("
-            + "uuid VARCHAR(255) NOT NULL,"
-            + "horse_id INT NOT NULL,"
-            + "horse_count INT NOT NULL,"
-            + "horse_uuid VARCHAR(255) NOT NULL,"
-            + "PRIMARY KEY (uuid, horse_id)"
-            + ");";
-
-        executeStatement(sql);
     }
 
     public HorseData getHorseData(UUID horseUuid)
