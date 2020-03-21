@@ -23,16 +23,6 @@ public class HorseData
         this.uuid = uuid;
     }
 
-    public HorseData(JsonObject jsonobject)
-    {
-        uuid = UUID.fromString(jsonobject.get("uuid").getAsString());
-        owner = UUID.fromString(jsonobject.get("owner").getAsString());
-        name = jsonobject.get("name").getAsString();
-        speed = jsonobject.get("speed").getAsFloat();
-        health = jsonobject.get("health").getAsByte();
-        skin = jsonobject.get("skin").getAsByte();
-    }
-
     public UUID getUuid()
     {
         return uuid;
@@ -61,18 +51,5 @@ public class HorseData
     public byte getSkin()
     {
         return skin;
-    }
-
-    JsonObject toJsonObject()
-    {
-        JsonObject result = new JsonObject();
-        result.addProperty("name", name);
-        result.addProperty("uuid", String.valueOf(uuid));
-        result.addProperty("owner", String.valueOf(owner));
-        result.addProperty("speed", speed);
-        result.addProperty("health", health);
-        result.addProperty("skin", skin);
-
-        return result;
     }
 }

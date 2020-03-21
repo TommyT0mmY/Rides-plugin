@@ -45,7 +45,7 @@ public class RidesGUIEvents implements Listener
             {
                 case HORSE_LIST_BUTTON:
                     Inventory inv = Bukkit.createInventory(p, 45, RidesClass.messages.getGuiTitle("select_horse"));
-                    OwnerData ownerdata = RidesClass.database.getOwnerByUUID(p.getUniqueId());
+                    OwnerData ownerdata = RidesClass.database.getOwnerData(p.getUniqueId());
                     if (ownerdata == null)
                     {
                         p.closeInventory();
@@ -63,7 +63,7 @@ public class RidesGUIEvents implements Listener
 
                     for (UUID currHorseUuid : horsesUuid)
                     {
-                        HorseData currHorse = RidesClass.database.getHorseByUUID(currHorseUuid);
+                        HorseData currHorse = RidesClass.database.getHorseData(currHorseUuid);
                         if (currHorse == null)
                             break;
                         inv.addItem(getEgg(currHorse));
@@ -96,7 +96,7 @@ public class RidesGUIEvents implements Listener
             e.setCancelled(true);
             NamespacedKey key = new NamespacedKey(RidesClass, "uuid");
             UUID selectedHorseUuid = UUID.fromString(clickedItem.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.STRING));
-            HorseData horsedata = RidesClass.database.getHorseByUUID(selectedHorseUuid);
+            HorseData horsedata = RidesClass.database.getHorseData(selectedHorseUuid);
             spawnHorse(horsedata);
         }
     }

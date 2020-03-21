@@ -73,7 +73,7 @@ public class RidesCommand implements CommandExecutor
                 } else
                 {
                     UUID rides_uuid = UUID.fromString(UuidString);
-                    HorseData horsedata = RidesClass.database.getHorseByUUID(rides_uuid);
+                    HorseData horsedata = RidesClass.database.getHorseData(rides_uuid);
 
                     ArrayList<String> lore = RidesClass.messages.getGuiButtonLore("send_back_horse");
                     for (int i = 0; i < lore.size(); ++i)

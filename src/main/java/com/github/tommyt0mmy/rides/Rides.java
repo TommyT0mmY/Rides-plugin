@@ -2,9 +2,6 @@ package com.github.tommyt0mmy.rides;
 
 import com.github.tommyt0mmy.rides.commands.RidesCommand;
 import com.github.tommyt0mmy.rides.events.RidesGUIEvents;
-import com.github.tommyt0mmy.rides.storing.HorseData;
-import com.github.tommyt0mmy.rides.storing.OwnerData;
-import com.github.tommyt0mmy.rides.storing.RidesDatabase;
 import com.github.tommyt0mmy.rides.storing.SQLiteDatabase;
 import com.github.tommyt0mmy.rides.storing.customizables.Messages;
 import org.bukkit.entity.Player;
@@ -19,8 +16,7 @@ public class Rides extends JavaPlugin {
 
     private static Rides instance;
     public Logger console = getLogger();
-    public RidesDatabase database;
-    public SQLiteDatabase sqlite;
+    public SQLiteDatabase database;
     public Messages messages;
     public Map<Player, UUID> spawnedHorses = new HashMap<>();
 
@@ -38,21 +34,21 @@ public class Rides extends JavaPlugin {
         getDataFolder().mkdir();
 
         messages = new Messages();
-        database = new RidesDatabase();
-        sqlite = new SQLiteDatabase();
+        database = new SQLiteDatabase();
 
+        /* DEBUG
         UUID DEBUGUUID = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
         sqlite.addHorseData(new HorseData("Nigga Horse", UUID.randomUUID(), DEBUGUUID, 1, (byte) 10, (byte) 10));
 
         OwnerData DEBUGOWNERDATA = sqlite.getOwnerData(DEBUGUUID);
-
         console.info("\n\n\n\n");
         for (UUID currHorse : DEBUGOWNERDATA.getHorses())
         {
             console.info(currHorse.toString());
         }
         console.info("\n\n\n\n");
+        */
 
         loadCommands();
         loadEvents();

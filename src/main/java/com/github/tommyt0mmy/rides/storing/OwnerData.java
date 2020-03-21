@@ -18,18 +18,6 @@ public class OwnerData
         this.horses = horses;
     }
 
-    public OwnerData (JsonObject jsonobject)
-    {
-        uuid = UUID.fromString(jsonobject.get("uuid").getAsString());
-        horses = new ArrayList<>();
-        JsonArray horsesJsonArray = jsonobject.getAsJsonArray("horses");
-
-        for (com.google.gson.JsonElement jsonElement : horsesJsonArray) {
-            UUID currUuid = UUID.fromString(jsonElement.getAsString());
-            horses.add(currUuid);
-        }
-    }
-
     public void setUuid(UUID uuid)
     {
         this.uuid = uuid;
@@ -49,18 +37,4 @@ public class OwnerData
     {
         return horses;
     }
-
-    JsonObject toJsonObject() {
-        JsonObject result = new JsonObject();
-        JsonArray horses_array = new JsonArray();
-        for (UUID currhorseuuid : horses)
-        {
-            horses_array.add(String.valueOf(currhorseuuid));
-        }
-        result.addProperty("uuid", String.valueOf(uuid));
-        result.add("horses", horses_array);
-
-        return result;
-    }
-
 }
