@@ -3,6 +3,7 @@ package com.github.tommyt0mmy.rides.storing;
 import com.github.tommyt0mmy.rides.Rides;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class SQLiteDatabase
@@ -15,8 +16,6 @@ public class SQLiteDatabase
     public SQLiteDatabase()
     {
         initDatabase();
-        try {connection = DriverManager.getConnection(url);}
-        catch (SQLException e) {RidesClass.console.severe(e.getMessage());}
     }
 
 
@@ -24,6 +23,8 @@ public class SQLiteDatabase
     {
         try
         {
+            connection = DriverManager.getConnection(url);
+
             if (connection != null)
             {
                 DatabaseMetaData meta = connection.getMetaData();
@@ -33,7 +34,7 @@ public class SQLiteDatabase
             }
         } catch (SQLException e)
         {
-            RidesClass.console.severe(e.getMessage());
+            RidesClass.console.severe(e.getMessage() + " (initDatabase)");
         }
     }
 
@@ -80,7 +81,7 @@ public class SQLiteDatabase
             byte skin = rs.getByte("skin");
 
             return new HorseData(name, horseUuid, owner_uuid, speed, health, skin);
-        } catch(SQLException e) {RidesClass.console.severe(e.getMessage());}
+        } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getHorseData)");}
 
         return null;
     }
@@ -99,7 +100,28 @@ public class SQLiteDatabase
             pstmt.setByte(6, horseData.getSkin());
 
             pstmt.execute();
-        } catch (SQLException e) {RidesClass.console.severe(e.getMessage());}
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
+    }
+
+    public OwnerData getOwnerData(UUID ownerUuid)
+    {
+        ArrayList<UUID> horses = new ArrayList<>();
+
+        String sql = "SELECT uuid FROM horses WHERE owner_uuid = ?";
+
+        try (PreparedStatement pstmt  = connection.prepareStatement(sql))
+        {
+            pstmt.setString(1, ownerUuid.toString());
+
+            ResultSet rs = pstmt.executeQuery();
+            // loop through the result set
+            while (rs.next())
+            {
+                horses.add(UUID.fromString(rs.getString("uuid")));
+            }
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (getOwnerData)");}
+
+        return new OwnerData(ownerUuid, horses);
     }
 
     private void executeStatement(String sql)
@@ -107,6 +129,6 @@ public class SQLiteDatabase
         try (Statement stmt = connection.createStatement())
         {
             stmt.execute(sql);
-        } catch (SQLException e) {RidesClass.console.severe(e.getMessage());}
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (executeStatement)");}
     }
 }
