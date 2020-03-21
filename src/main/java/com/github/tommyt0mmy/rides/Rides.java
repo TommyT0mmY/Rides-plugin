@@ -2,7 +2,9 @@ package com.github.tommyt0mmy.rides;
 
 import com.github.tommyt0mmy.rides.commands.RidesCommand;
 import com.github.tommyt0mmy.rides.events.RidesGUIEvents;
+import com.github.tommyt0mmy.rides.storing.HorseData;
 import com.github.tommyt0mmy.rides.storing.RidesDatabase;
+import com.github.tommyt0mmy.rides.storing.SQLiteDatabase;
 import com.github.tommyt0mmy.rides.storing.customizables.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +19,7 @@ public class Rides extends JavaPlugin {
     private static Rides instance;
     public Logger console = getLogger();
     public RidesDatabase database;
+    public SQLiteDatabase sqlite;
     public Messages messages;
     public Map<Player, UUID> spawnedHorses = new HashMap<>();
 
@@ -35,6 +38,10 @@ public class Rides extends JavaPlugin {
 
         messages = new Messages();
         database = new RidesDatabase();
+        sqlite = new SQLiteDatabase();
+
+        // sqlite.addHorseData(new HorseData("nigga", UUID.randomUUID(), UUID.randomUUID(), 1, (byte) 10, (byte) 10));
+
 
         loadCommands();
         loadEvents();

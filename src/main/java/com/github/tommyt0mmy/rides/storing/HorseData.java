@@ -9,18 +9,18 @@ public class HorseData
     private String name;
     private UUID owner;
     private UUID uuid;
-    private double speed;
-    private double health;
+    private float speed;
+    private byte health;
     private byte skin;
 
-    public HorseData(String name, UUID owner, double speed, double health, byte skin)
+    public HorseData(String name, UUID uuid, UUID owner, float speed, byte health, byte skin)
     {
         this.name = name;
         this.owner = owner;
         this.speed = speed;
         this.health = health;
         this.skin = skin;
-        this.uuid = UUID.randomUUID();
+        this.uuid = uuid;
     }
 
     public HorseData(JsonObject jsonobject)
@@ -28,8 +28,8 @@ public class HorseData
         uuid = UUID.fromString(jsonobject.get("uuid").getAsString());
         owner = UUID.fromString(jsonobject.get("owner").getAsString());
         name = jsonobject.get("name").getAsString();
-        speed = jsonobject.get("speed").getAsDouble();
-        health = jsonobject.get("health").getAsDouble();
+        speed = jsonobject.get("speed").getAsFloat();
+        health = jsonobject.get("health").getAsByte();
         skin = jsonobject.get("skin").getAsByte();
     }
 
@@ -48,12 +48,12 @@ public class HorseData
         return owner;
     }
 
-    public double getSpeed()
+    public float getSpeed()
     {
         return speed;
     }
 
-    public double getHealth()
+    public int getHealth()
     {
         return health;
     }
