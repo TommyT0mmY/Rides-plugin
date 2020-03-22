@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RidesGUIEvents implements Listener
@@ -72,15 +73,15 @@ public class RidesGUIEvents implements Listener
 
                     break;
                 case REMOVE_HORSE:
-                    UUID horseUuid = RidesClass.spawnedHorses.get(p);
-                    if (horseUuid == null)
+                    Optional<UUID> horseUuid = RidesClass.database.getSpawnedHorseFromOwner(p.getUniqueId());
+                    if (!horseUuid.isPresent())
                         return;
-                    LivingEntity horse = (LivingEntity) Bukkit.getServer().getEntity(horseUuid);
+                    LivingEntity horse = (LivingEntity) Bukkit.getServer().getEntity(horseUuid.get());
 
                     horse.teleport(new Location(horse.getWorld(), 0, -10, 0));
                     horse.setSilent(true);
                     horse.setHealth(0);
-                    RidesClass.spawnedHorses.remove(p);
+                    RidesClass.database.removeSpawnedHorse(p.getUniqueId());
                     Inventory newInv = p.getOpenInventory().getTopInventory();
                     newInv.setItem(13, new ItemStack(Material.AIR));
                     p.openInventory(newInv);
@@ -169,20 +170,23 @@ public class RidesGUIEvents implements Listener
         spawnedHorse.setOwner(owner);
         spawnedHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horsedata.getSpeed());
         spawnedHorse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(horsedata.getHealth());
+
         NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
         spawnedHorse.getPersistentDataContainer().set(uuidkey, PersistentDataType.STRING, horsedata.getUuid().toString());
 
-        if (RidesClass.spawnedHorses.get(owner) != null)
+        //removing old horse
+        if (RidesClass.database.getSpawnedHorseFromOwner(owner.getUniqueId()).isPresent())
         {
-            UUID oldHorseUuid = RidesClass.spawnedHorses.get(owner);
+            UUID oldHorseUuid = RidesClass.database.getSpawnedHorseFromOwner(owner.getUniqueId()).get();
             LivingEntity oldHorse = (LivingEntity) Bukkit.getServer().getEntity(oldHorseUuid);
 
-            oldHorse.teleport(new Location(oldHorse.getWorld(), 0, -10, 0));
+            oldHorse.teleport(new Location(oldHorse.getWorld(), oldHorse.getLocation().getX(), -10, oldHorse.getLocation().getZ()));
             oldHorse.setSilent(true);
             oldHorse.setHealth(0);
             owner.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.GREEN, "horse_replaced"));
         }
-        RidesClass.spawnedHorses.put(owner, spawnedHorse.getUniqueId());
+        RidesClass.database.removeSpawnedHorse(owner.getUniqueId());
+        RidesClass.database.addSpawnedHorse(owner.getUniqueId(), horsedata.getUuid(), spawnedHorse.getUniqueId());
 
         return spawnedHorse;
     }

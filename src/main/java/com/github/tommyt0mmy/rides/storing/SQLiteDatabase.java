@@ -4,6 +4,7 @@ import com.github.tommyt0mmy.rides.Rides;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SQLiteDatabase
@@ -16,8 +17,8 @@ public class SQLiteDatabase
     public SQLiteDatabase()
     {
         initDatabase();
+        clearTable("spawned_horses");
     }
-
 
     public void initDatabase()
     {
@@ -29,7 +30,6 @@ public class SQLiteDatabase
             {
                 DatabaseMetaData meta = connection.getMetaData();
                 RidesClass.console.info("The driver name is " + meta.getDriverName());
-                RidesClass.console.info("A new database has been created.");
                 initTables();
             }
         } catch (SQLException e)
@@ -51,6 +51,21 @@ public class SQLiteDatabase
                    + ");";
 
         executeStatement(sql);
+
+        //Ingame spawned horses table
+        sql = "CREATE TABLE IF NOT EXISTS spawned_horses("
+            + "owner_uuid VARCHAR(255) NOT NULL PRIMARY KEY,"
+            + "horsedata_uuid VARCHAR(255) NOT NULL,"
+            + "horseentity_uuid VARCHAR(255) NOT NULL"
+            + ");";
+
+        executeStatement(sql);
+    }
+
+    public void clearTable(String table_name)
+    {
+        String sql = String.format("DELETE FROM %s;", table_name);
+        executeStatement(sql);
     }
 
     public HorseData getHorseData(UUID horseUuid)
@@ -62,6 +77,7 @@ public class SQLiteDatabase
         {
             pstmt.setString(1, horseUuid.toString());
             ResultSet rs = pstmt.executeQuery();
+            rs.next();
 
             String name = rs.getString("name");
             UUID owner_uuid = UUID.fromString(rs.getString("owner_uuid"));
@@ -111,6 +127,71 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (getOwnerData)");}
 
         return new OwnerData(ownerUuid, horses);
+    }
+
+    public void addSpawnedHorse(UUID owner, UUID horsedata_uuid, UUID horseentity_uuid)
+    {
+        String sql = "INSERT INTO spawned_horses(owner_uuid, horsedata_uuid, horseentity_uuid) VALUES(?, ?, ?)";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setString(1, owner.toString());
+            pstmt.setString(2, horsedata_uuid.toString());
+            pstmt.setString(3, horseentity_uuid.toString());
+
+            pstmt.execute();
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addSpawnedHorse)");}
+    }
+
+    public void removeSpawnedHorse(UUID owner)
+    {
+        String sql = "DELETE FROM spawned_horses WHERE owner_uuid = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setString(1, owner.toString());
+
+            pstmt.execute();
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeSpawnedHorse)");}
+    }
+
+    public Optional<UUID> getSpawnedHorseFromOwner(UUID owner)
+    {
+        String sql = "SELECT horseentity_uuid FROM spawned_horses WHERE owner_uuid = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
+        {
+            preparedStatement.setString(1, owner.toString());
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(!resultSet.next())
+                return Optional.empty();
+
+            return Optional.of(UUID.fromString(resultSet.getString("horseentity_uuid")));
+
+        }
+        catch(SQLException e)
+        {
+            RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseFromOwner)");
+        }
+
+        return Optional.empty();
+    }
+
+    public HorseData getSpawnedHorseDataFromOwner(UUID owner)
+    {
+        String sql = "SELECT horsedata_uuid FROM spawned_horses WHERE owner_uuid = ?";
+
+        try (PreparedStatement pstmt  = connection.prepareStatement(sql))
+        {
+            pstmt.setString(1, owner.toString());
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+
+            return getHorseData(UUID.fromString(rs.getString("horsedata_uuid")));
+        }catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");}
+
+        return null;
     }
 
     private void executeStatement(String sql)
