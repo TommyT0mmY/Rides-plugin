@@ -8,24 +8,24 @@ public class HorseData
 {
     private String name;
     private UUID owner;
-    private UUID uuid;
+    private int id;
     private float speed;
     private byte health;
     private byte skin;
 
-    public HorseData(String name, UUID uuid, UUID owner, float speed, byte health, byte skin)
+    public HorseData(String name, int id, UUID owner, float speed, byte health, byte skin)
     {
         this.name = name;
         this.owner = owner;
         this.speed = speed;
         this.health = health;
         this.skin = skin;
-        this.uuid = uuid;
+        this.id = id;
     }
 
-    public UUID getUuid()
+    public int getId()
     {
-        return uuid;
+        return id;
     }
 
     public String getName()

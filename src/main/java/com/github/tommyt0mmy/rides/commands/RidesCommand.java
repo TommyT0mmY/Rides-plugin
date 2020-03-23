@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import sun.awt.image.IntegerComponentRaster;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class RidesCommand implements CommandExecutor
         inv.setItem(16, customGUIitem(Material.BOOK, RidesItemKey.HELP_BUTTON, RidesClass.messages.getGuiButtonName("help"), RidesClass.messages.getGuiButtonLore("help")));
         if (RidesClass.database.getSpawnedHorseFromOwner(p.getUniqueId()).isPresent())
         {
-            NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
+            NamespacedKey uuidkey = new NamespacedKey(RidesClass, "horse_id");
             Optional<UUID> spawnedHorseUuid = RidesClass.database.getSpawnedHorseFromOwner(p.getUniqueId());
             if (spawnedHorseUuid.isPresent())
             {
@@ -69,14 +70,13 @@ public class RidesCommand implements CommandExecutor
                 }
                 else
                 {
-                    String UuidString = horse.getPersistentDataContainer().get(uuidkey, PersistentDataType.STRING);
-                    if (UuidString == null)
+                    Integer horse_id = horse.getPersistentDataContainer().get(uuidkey, PersistentDataType.INTEGER);
+                    if (horse_id == null)
                     {
                         RidesClass.database.removeSpawnedHorse(p.getUniqueId());
                     } else
                     {
-                        UUID rides_uuid = UUID.fromString(UuidString);
-                        HorseData horsedata = RidesClass.database.getHorseData(rides_uuid);
+                        HorseData horsedata = RidesClass.database.getHorseData(horse_id);
 
                         ArrayList<String> lore = RidesClass.messages.getGuiButtonLore("send_back_horse");
                         for (int i = 0; i < lore.size(); ++i)

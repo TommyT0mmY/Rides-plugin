@@ -10,9 +10,9 @@ import java.util.UUID;
 public class OwnerData
 {
     private UUID uuid;
-    private ArrayList<UUID> horses;
+    private ArrayList<Integer> horses;
 
-    public OwnerData(UUID uuid, ArrayList<UUID> horses)
+    public OwnerData(UUID uuid, ArrayList<Integer> horses)
     {
         this.uuid = uuid;
         this.horses = horses;
@@ -23,7 +23,7 @@ public class OwnerData
         this.uuid = uuid;
     }
 
-    public void setHorses(ArrayList<UUID> horses)
+    public void setHorses(ArrayList<Integer> horses)
     {
         this.horses = horses;
     }
@@ -33,7 +33,7 @@ public class OwnerData
         return uuid;
     }
 
-    public ArrayList<UUID> getHorses()
+    public ArrayList<Integer> getHorses()
     {
         return horses;
     }
