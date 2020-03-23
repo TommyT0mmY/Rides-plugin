@@ -75,13 +75,19 @@ public class RidesCommand implements CommandExecutor
                         RidesClass.database.removeSpawnedHorse(p.getUniqueId());
                     } else
                     {
-                        HorseData horsedata = RidesClass.database.getHorseData(horse_id);
+                        Optional<HorseData> horsedata = RidesClass.database.getHorseData(horse_id);
+                        if (!horsedata.isPresent())
+                        {
+                            RidesClass.database.removeSpawnedHorse(p.getUniqueId());
+                        }
+                        else
+                        {
+                            ArrayList<String> lore = RidesClass.messages.getGuiButtonLore("send_back_horse");
+                            for (int i = 0; i < lore.size(); ++i)
+                                lore.set(i, lore.get(i).replaceAll("<HORSE_NAME>", horsedata.get().getName()));
 
-                        ArrayList<String> lore = RidesClass.messages.getGuiButtonLore("send_back_horse");
-                        for (int i = 0; i < lore.size(); ++i)
-                            lore.set(i, lore.get(i).replaceAll("<HORSE_NAME>", horsedata.getName()));
-
-                        inv.setItem(13, customGUIitem(Material.BARRIER, RidesItemKey.REMOVE_HORSE, RidesClass.messages.getGuiButtonName("send_back_horse"), lore));
+                            inv.setItem(13, customGUIitem(Material.BARRIER, RidesItemKey.REMOVE_HORSE, RidesClass.messages.getGuiButtonName("send_back_horse"), lore));
+                        }
                     }
                 }
             }

@@ -60,6 +60,14 @@ public class SQLiteDatabase
             + ");";
 
         executeStatement(sql);
+
+        //Stables table
+        /*
+        sql += "CREATE TABLE IF NOT EXISTS stables("
+             + ""
+             + ""
+             + ");";
+         */
     }
 
     public void clearTable(String table_name)
@@ -68,7 +76,7 @@ public class SQLiteDatabase
         executeStatement(sql);
     }
 
-    public HorseData getHorseData(int horse_id)
+    public Optional<HorseData> getHorseData(int horse_id)
     {
         String sql = "SELECT owner_uuid, name, speed, health, skin "
                    + "FROM horses "
@@ -85,10 +93,10 @@ public class SQLiteDatabase
             byte health = rs.getByte("health");
             byte skin = rs.getByte("skin");
 
-            return new HorseData(name, horse_id, owner_uuid, speed, health, skin);
+            return Optional.of(new HorseData(name, horse_id, owner_uuid, speed, health, skin));
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getHorseData)");}
 
-        return null;
+        return Optional.empty();
     }
 
     public void addHorseData(HorseData horseData)
@@ -108,7 +116,7 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
     }
 
-    public OwnerData getOwnerData(UUID ownerUuid)
+    public Optional<OwnerData> getOwnerData(UUID ownerUuid)
     {
         ArrayList<Integer> horses = new ArrayList<>();
 
@@ -124,9 +132,9 @@ public class SQLiteDatabase
             {
                 horses.add(rs.getInt("id"));
             }
+            return Optional.of(new OwnerData(ownerUuid, horses));
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (getOwnerData)");}
-
-        return new OwnerData(ownerUuid, horses);
+        return Optional.empty();
     }
 
     public void addSpawnedHorse(UUID owner, Integer horse_id, UUID horse_uuid)
@@ -190,13 +198,10 @@ public class SQLiteDatabase
             if(!resultSet.next())
                 return Optional.empty();
 
-            return Optional.of(getHorseData(resultSet.getInt("horse_id")));
+            return getHorseData(resultSet.getInt("horse_id"));
 
         }
-        catch(SQLException e)
-        {
-            RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");
-        }
+        catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");}
 
         return Optional.empty();
     }

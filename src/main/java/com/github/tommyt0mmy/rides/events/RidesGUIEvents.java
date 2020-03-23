@@ -46,15 +46,15 @@ public class RidesGUIEvents implements Listener
             {
                 case HORSE_LIST_BUTTON:
                     Inventory inv = Bukkit.createInventory(p, 45, RidesClass.messages.getGuiTitle("select_horse"));
-                    OwnerData ownerdata = RidesClass.database.getOwnerData(p.getUniqueId());
-                    if (ownerdata == null)
+                    Optional<OwnerData> ownerdata = RidesClass.database.getOwnerData(p.getUniqueId());
+                    if (!ownerdata.isPresent())
                     {
                         p.closeInventory();
                         p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "no_horse_possessed"));
                         return;
                     }
 
-                    ArrayList<Integer> horsesIds = ownerdata.getHorses();
+                    ArrayList<Integer> horsesIds = ownerdata.get().getHorses();
                     if (horsesIds == null)
                     {
                         p.closeInventory();
@@ -64,10 +64,10 @@ public class RidesGUIEvents implements Listener
 
                     for (Integer currHorseId : horsesIds)
                     {
-                        HorseData currHorse = RidesClass.database.getHorseData(currHorseId);
-                        if (currHorse == null)
+                        Optional<HorseData> currHorse = RidesClass.database.getHorseData(currHorseId);
+                        if (!currHorse.isPresent())
                             break;
-                        inv.addItem(getEgg(currHorse));
+                        inv.addItem(getEgg(currHorse.get()));
                     }
                     p.openInventory(inv);
 
@@ -97,8 +97,10 @@ public class RidesGUIEvents implements Listener
             e.setCancelled(true);
             NamespacedKey key = new NamespacedKey(RidesClass, "id");
             Integer selectedHorseId = clickedItem.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
-            HorseData horsedata = RidesClass.database.getHorseData(selectedHorseId);
-            spawnHorse(horsedata);
+            Optional<HorseData> horsedata = RidesClass.database.getHorseData(selectedHorseId);
+            if (!horsedata.isPresent())
+                return;
+            spawnHorse(horsedata.get());
         }
     }
 
