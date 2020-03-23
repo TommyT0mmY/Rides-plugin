@@ -116,6 +116,18 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
     }
 
+    public void removeHorseData(Integer id)
+    {
+        String sql = "DELETE FROM horses WHERE id = ?";
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setInt(1, id);
+
+            pstmt.execute();
+        }catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeHorseData)");}
+    }
+
     public Optional<OwnerData> getOwnerData(UUID ownerUuid)
     {
         ArrayList<Integer> horses = new ArrayList<>();
