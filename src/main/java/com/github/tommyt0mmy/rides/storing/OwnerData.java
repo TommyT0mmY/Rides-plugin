@@ -1,10 +1,6 @@
 package com.github.tommyt0mmy.rides.storing;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.UUID;
 
 public class OwnerData

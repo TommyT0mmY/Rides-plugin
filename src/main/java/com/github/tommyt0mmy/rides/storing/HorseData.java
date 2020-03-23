@@ -1,7 +1,5 @@
 package com.github.tommyt0mmy.rides.storing;
 
-import com.google.gson.JsonObject;
-
 import java.util.UUID;
 
 public class HorseData
