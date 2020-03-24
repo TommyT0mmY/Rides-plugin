@@ -1,6 +1,10 @@
 package com.github.tommyt0mmy.rides.storing;
 
 import com.github.tommyt0mmy.rides.Rides;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.graalvm.compiler.nodes.calc.IntegerDivRemNode;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,7 +24,10 @@ public class SQLiteDatabase
         clearTable("spawned_horses");
     }
 
-    public void initDatabase()
+
+    /// setup methods ///
+
+    private void initDatabase()
     {
         try
         {
@@ -38,7 +45,7 @@ public class SQLiteDatabase
         }
     }
 
-    public void initTables()
+    private void initTables()
     {
         // Horses table
         String sql = "CREATE TABLE IF NOT EXISTS horses("
@@ -62,12 +69,16 @@ public class SQLiteDatabase
         executeStatement(sql);
 
         //Stables table
-        /*
         sql += "CREATE TABLE IF NOT EXISTS stables("
-             + ""
-             + ""
+             + "id INT NOT NULL PRIMARY KEY,"
+             + "curr_preview_state INT NOT NULL,"
+             + "preview_location VARCHAR(255) NOT NULL,"
+             + "next_preview_sign_location VARCHAR(255) NOT NULL,"
+             + "previous_preview_sign_location VARCHAR(255) NOT NULL,"
+             + "buy_horse_sign_location VARCHAR(255) NOT NULL"
              + ");";
-         */
+
+        executeStatement(sql);
     }
 
     public void clearTable(String table_name)
@@ -75,6 +86,10 @@ public class SQLiteDatabase
         String sql = String.format("DELETE FROM %s;", table_name);
         executeStatement(sql);
     }
+
+
+
+    /// horses table methods ///
 
     public Optional<HorseData> getHorseData(int horse_id)
     {
@@ -85,7 +100,8 @@ public class SQLiteDatabase
         {
             pstmt.setInt(1, horse_id);
             ResultSet rs = pstmt.executeQuery();
-            rs.next();
+            if (!rs.next())
+                return Optional.empty();
 
             String name = rs.getString("name");
             UUID owner_uuid = UUID.fromString(rs.getString("owner_uuid"));
@@ -101,7 +117,13 @@ public class SQLiteDatabase
 
     public void addHorseData(HorseData horseData)
     {
-        String sql  = "INSERT INTO horses(id, owner_uuid, name, speed, health, skin) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql  = "INSERT INTO horses(" +
+                      "id, " +
+                      "owner_uuid, " +
+                      "name, speed, " +
+                      "health, " +
+                      "skin) " +
+                      "VALUES(?, ?, ?, ?, ?, ?)";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql))
         {
@@ -118,21 +140,24 @@ public class SQLiteDatabase
 
     public void removeHorseData(Integer id)
     {
-        String sql = "DELETE FROM horses WHERE id = ?";
+        String sql = "DELETE FROM horses " +
+                     "WHERE id = ?";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, id);
 
             pstmt.execute();
-        }catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeHorseData)");}
+        } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeHorseData)");}
     }
 
     public Optional<OwnerData> getOwnerData(UUID ownerUuid)
     {
         ArrayList<Integer> horses = new ArrayList<>();
 
-        String sql = "SELECT id FROM horses WHERE owner_uuid = ?";
+        String sql = "SELECT id " +
+                     "FROM horses " +
+                     "WHERE owner_uuid = ?";
 
         try (PreparedStatement pstmt  = connection.prepareStatement(sql))
         {
@@ -149,9 +174,15 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
+    /// spawned_horses table methods ///
+
     public void addSpawnedHorse(UUID owner, Integer horse_id, UUID horse_uuid)
     {
-        String sql = "INSERT INTO spawned_horses(owner_uuid, horse_id, horse_uuid) VALUES(?, ?, ?)";
+        String sql = "INSERT INTO spawned_horses(" +
+                     "owner_uuid, " +
+                     "horse_id, " +
+                     "horse_uuid) " +
+                     "VALUES(?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql))
         {
@@ -165,7 +196,8 @@ public class SQLiteDatabase
 
     public void removeSpawnedHorse(UUID owner)
     {
-        String sql = "DELETE FROM spawned_horses WHERE owner_uuid = ?";
+        String sql = "DELETE FROM spawned_horses " +
+                     "WHERE owner_uuid = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql))
         {
@@ -177,7 +209,9 @@ public class SQLiteDatabase
 
     public Optional<UUID> getSpawnedHorseFromOwner(UUID owner)
     {
-        String sql = "SELECT horse_uuid FROM spawned_horses WHERE owner_uuid = ?";
+        String sql = "SELECT horse_uuid " +
+                     "FROM spawned_horses " +
+                     "WHERE owner_uuid = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
         {
@@ -200,7 +234,9 @@ public class SQLiteDatabase
 
     public Optional<HorseData> getSpawnedHorseDataFromOwner(UUID owner)
     {
-        String sql = "SELECT horse_id FROM spawned_horses WHERE owner_uuid = ?";
+        String sql = "SELECT horse_id " +
+                     "FROM spawned_horses " +
+                     "WHERE owner_uuid = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
         {
@@ -212,11 +248,125 @@ public class SQLiteDatabase
 
             return getHorseData(resultSet.getInt("horse_id"));
 
-        }
-        catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");}
+        } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");}
 
         return Optional.empty();
     }
+
+
+
+    /// stables table methods ///
+
+    public Optional<StableData> addStable(Location preview_location, Location next_preview_sign_location, Location previous_preview_sign_location, Location buy_horse_sign_location)
+    {
+        String sql = "INSERT INTO stables(" +
+                     "id, " +
+                     "curr_preview_state, " +
+                     "preview_location, " +
+                     "next_preview_sign_location, " +
+                     "previous_preview_sign_location, " +
+                     "buy_horse_sign_location) " +
+                     "VALUES(?, ?, ?, ?, ?, ?)";
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            //Generate new id
+            String sql2 = "SELECT MAX(id) FROM stables AS maxId";
+            Statement stmt2 = connection.createStatement();
+            stmt2.execute(sql2);
+            ResultSet maxId_rs = stmt2.getResultSet();
+            if (!maxId_rs.next())
+                return Optional.empty();
+            int newId = maxId_rs.getInt("maxId") + 1;
+
+            pstmt.setInt(1, newId);
+            pstmt.setInt(2, 0);
+            pstmt.setString(3, SQLiteDatabase.LocationToString(preview_location));
+            pstmt.setString(4, SQLiteDatabase.LocationToString(next_preview_sign_location));
+            pstmt.setString(5, SQLiteDatabase.LocationToString(previous_preview_sign_location));
+            pstmt.setString(6, SQLiteDatabase.LocationToString(buy_horse_sign_location));
+
+            pstmt.execute();
+
+            return getStable(newId);
+        } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (addStable)");}
+        return Optional.empty();
+    }
+
+    public void removeStable(Integer stableId)
+    {
+        String sql = "DELETE FROM stables " +
+                     "WHERE id = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setInt(1, stableId);
+
+            pstmt.execute();
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeStable)");}
+    }
+
+    public Optional<StableData> getStable(Integer stableId)
+    {
+        String sql = "SELECT curr_preview_state, " +
+                     "preview_location, " +
+                     "next_preview_sign_location, " +
+                     "previous_preview_sign_location, " +
+                     "buy_horse_sign_location " +
+                     "FROM stables " +
+                     "WHERE id = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setInt(1, stableId);
+            pstmt.execute();
+
+            ResultSet resultSet = pstmt.getResultSet();
+            if (!resultSet.next())
+                return Optional.empty();
+
+            Integer curr_preview_state = resultSet.getInt("curr_preview_state");
+            Optional<Location> preview_location = SQLiteDatabase.StringToLocation(resultSet.getString("preview_location"));
+            Optional<Location> next_preview_sign_location = SQLiteDatabase.StringToLocation(resultSet.getString("next_preview_sign_location"));
+            Optional<Location> previous_preview_sign_location = SQLiteDatabase.StringToLocation(resultSet.getString("previous_preview_sign_location"));
+            Optional<Location> buy_horse_sign_location = SQLiteDatabase.StringToLocation(resultSet.getString("previous_preview_sign_location"));
+
+            if (!(preview_location.isPresent() &&
+                    next_preview_sign_location.isPresent() &&
+                    previous_preview_sign_location.isPresent() &&
+                    buy_horse_sign_location.isPresent()))
+                return Optional.empty();
+
+            return Optional.of(new StableData(stableId,
+                    curr_preview_state,
+                    preview_location.get(),
+                    next_preview_sign_location.get(),
+                    previous_preview_sign_location.get(),
+                    buy_horse_sign_location.get()));
+
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (getStable)");}
+
+        return Optional.empty();
+    }
+
+    public void setStablePreviewState(Integer stableId, Integer newState)
+    {
+        String sql = "UPDATE stables " +
+                     "SET curr_preview_state = ? " +
+                     "WHERE id = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        {
+            pstmt.setInt(1, newState);
+            pstmt.setInt(2, stableId);
+
+            pstmt.execute();
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (setStablePreviewState)");}
+    }
+
+
+
+    /// general purpose methods ///
 
     private void executeStatement(String sql)
     {
@@ -224,5 +374,22 @@ public class SQLiteDatabase
         {
             stmt.execute(sql);
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (executeStatement)");}
+    }
+
+    private static String LocationToString(Location loc)
+    {
+        return loc.getWorld().getName() + ";" + loc.getBlockX() + ";" + loc.getBlockY() + ";" + loc.getBlockZ();
+    }
+
+    private static Optional<Location> StringToLocation(String string)
+    {
+        String[] split = string.split(";");
+        World world = Bukkit.getWorld(split[0]);
+        if (world == null || split.length != 4)
+            return Optional.empty();
+        int x = Integer.parseInt(split[1]);
+        int y = Integer.parseInt(split[2]);
+        int z = Integer.parseInt(split[3]);
+        return Optional.of(new Location(world, x, y, z));
     }
 }
