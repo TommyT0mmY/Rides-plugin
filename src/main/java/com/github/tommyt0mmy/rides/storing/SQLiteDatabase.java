@@ -63,9 +63,9 @@ public class SQLiteDatabase
                    + "id INT NOT NULL PRIMARY KEY,"
                    + "owner_uuid VARCHAR(255) NOT NULL,"
                    + "name VARCHAR(255) NOT NULL,"
-                   + "speed float NOT NULL,"
-                   + "health tinyint NOT NULL,"
-                   + "skin tinyint NOT NULL"
+                   + "speed FLOAT NOT NULL,"
+                   + "health TINYINT NOT NULL,"
+                   + "skin TINYINT NOT NULL"
                    + ");";
 
         executeStatement(sql);
@@ -140,12 +140,16 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
-    /** Adds a new HorseData to the database
+    /** Use this method to create a new HorseData and adding it to the database.
+     * The method could return Optional.empty if something goes wrong, remember to check.
      *
-     * @param  horseData the new HorseData
-     * @see HorseData
+     * @param name   the display name of the horse
+     * @param owner  the UUID of the owner
+     * @param speed  the natural horse speed
+     * @param health the max health of the horse
+     * @param skin   the skin id of the horse
      */
-    public void addHorseData(HorseData horseData)
+    public Optional<HorseData> addHorseData(String name, UUID owner, float speed, byte health, byte skin)
     {
         String sql  = "INSERT INTO horses(" +
                       "id, " +
@@ -157,15 +161,27 @@ public class SQLiteDatabase
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql))
         {
-            pstmt.setInt(1, horseData.getId());
-            pstmt.setString(2, horseData.getOwner().toString());
-            pstmt.setString(3, horseData.getName());
-            pstmt.setFloat(4, horseData.getSpeed());
-            pstmt.setInt(5, horseData.getHealth());
-            pstmt.setByte(6, horseData.getSkin());
+            //Generate new id
+            String sql2 = "SELECT MAX(id) FROM stables AS maxId";
+            Statement stmt2 = connection.createStatement();
+            stmt2.execute(sql2);
+            ResultSet maxId_rs = stmt2.getResultSet();
+            int newId = 0;
+            if (maxId_rs.next())
+                newId = maxId_rs.getInt("maxId") + 1;
+
+            pstmt.setInt(1, newId);
+            pstmt.setString(2, owner.toString());
+            pstmt.setString(3, name);
+            pstmt.setFloat(4, speed);
+            pstmt.setInt(5, health);
+            pstmt.setByte(6, skin);
 
             pstmt.execute();
+
+            return getHorseData(newId);
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
+        return Optional.empty();
     }
 
     /** Removes an HorseData from the database by the horse id
@@ -329,7 +345,8 @@ public class SQLiteDatabase
 
     /// stables table methods ///
 
-    /** Use this method to create and add a new StableData to the database.
+    /** Use this method to create a new StableData and adding it to the database.
+     * The method could return Optional.empty if something goes wrong, remember to check.
      *
      * @param  preview_location the preview horse spawn location
      * @param  next_preview_sign_location the location of the in-game sign used to look at the next preview
@@ -357,9 +374,9 @@ public class SQLiteDatabase
             Statement stmt2 = connection.createStatement();
             stmt2.execute(sql2);
             ResultSet maxId_rs = stmt2.getResultSet();
-            if (!maxId_rs.next())
-                return Optional.empty();
-            int newId = maxId_rs.getInt("maxId") + 1;
+            int newId = 0;
+            if (maxId_rs.next())
+                newId = maxId_rs.getInt("maxId") + 1;
 
             pstmt.setInt(1, newId);
             pstmt.setInt(2, 0);
