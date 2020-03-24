@@ -264,7 +264,7 @@ public class SQLiteDatabase
 
     /** Returns the UUID of an alive horse linked to an owner's UUID.
      * If there isn't any spawned horse the method will return Optional.empty,
-     * otherwise it will return Optional&lt;UUID&rt;
+     * otherwise it will return Optional&lt;UUID&gt;
      *
      * @param  owner the owner's UUID
      * @return  the horse's UUID or Optional.empty
@@ -297,7 +297,7 @@ public class SQLiteDatabase
 
     /** Returns the HorseData of an alive horse linked to an owner's UUID.
      * If there isn't any spawned horse the method will return Optional.empty,
-     * otherwise it will return Optional&lt;HorseData&rt;
+     * otherwise it will return Optional&lt;HorseData&gt;
      *
      * @param  owner the owner's UUID
      * @return  the HorseData or Optional.empty
@@ -395,7 +395,7 @@ public class SQLiteDatabase
 
     /** Gets a StableData from the database by the stable id.
      *
-     * @param  stableId
+     * @param  stableId the stable id
      * @return  the StableData or Optional.empty
      * @see StableData
      * @see java.util.Optional
