@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
+/** This class defines the plugin's database behaviour. */
 public class SQLiteDatabase
 {
     Rides RidesClass = Rides.getInstance();
@@ -17,6 +18,7 @@ public class SQLiteDatabase
     private final String url = "jdbc:sqlite:" + RidesClass.getDataFolder().getAbsolutePath() + "\\database.db";
     private Connection connection;
 
+    /** Creates a new database connection */
     public SQLiteDatabase()
     {
         initDatabase();
@@ -26,6 +28,7 @@ public class SQLiteDatabase
 
     /// setup methods ///
 
+    /** A setup method that should be only called by the constructor */
     private void initDatabase()
     {
         try
@@ -44,6 +47,15 @@ public class SQLiteDatabase
         }
     }
 
+    /** A method that creates every necessary table and should be only called by the constructor.
+     * <p>
+     * Created tables:
+     * <ul>
+     *     <li>horses: HorseData is stored in this table
+     *     <li>spawned_horses: Every spawned horse by the plugin is stored in this table
+     *     <li>stables: StableData is stored in this table
+     * </ul>
+     */
     private void initTables()
     {
         // Horses table
@@ -80,6 +92,10 @@ public class SQLiteDatabase
         executeStatement(sql);
     }
 
+    /** This method clears a given table
+     *
+     * @param  table_name the table name
+     */
     public void clearTable(String table_name)
     {
         String sql = String.format("DELETE FROM %s;", table_name);
@@ -90,6 +106,16 @@ public class SQLiteDatabase
 
     /// horses table methods ///
 
+    /** Gets the stored HorseData corresponding to the horse id.
+     * <p>
+     * If the id is not registered the method will return
+     * Optional.empty, otherwise Optional&lt;HorseData&gt;.
+     *
+     * @param  horse_id the horse id
+     * @return  the HorseData or Optional.empty
+     * @see HorseData
+     * @see java.util.Optional
+     */
     public Optional<HorseData> getHorseData(int horse_id)
     {
         String sql = "SELECT owner_uuid, name, speed, health, skin "
@@ -114,6 +140,11 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
+    /** Adds a new HorseData to the database
+     *
+     * @param  horseData the new HorseData
+     * @see HorseData
+     */
     public void addHorseData(HorseData horseData)
     {
         String sql  = "INSERT INTO horses(" +
@@ -137,6 +168,11 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
     }
 
+    /** Removes an HorseData from the database by the horse id
+     *
+     * @param  id the horse id
+     * @see HorseData
+     */
     public void removeHorseData(Integer id)
     {
         String sql = "DELETE FROM horses " +
@@ -150,6 +186,16 @@ public class SQLiteDatabase
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeHorseData)");}
     }
 
+    /** Gets the stored OwnerData corresponding to the owner UUID.
+     * <p>
+     * If the UUID is not registered the method will return
+     * Optional.empty, otherwise Optional&lt;OwnerData&gt;.
+     *
+     * @param  ownerUuid the owner's UUID
+     * @return  the HorseData or Optional.empty
+     * @see OwnerData
+     * @see java.util.Optional
+     */
     public Optional<OwnerData> getOwnerData(UUID ownerUuid)
     {
         ArrayList<Integer> horses = new ArrayList<>();
@@ -175,6 +221,12 @@ public class SQLiteDatabase
 
     /// spawned_horses table methods ///
 
+    /** When a new horse is spawned, it should be saved in the database with this method.
+     *
+     * @param owner  the owner's UUID
+     * @param horse_id  the horse id
+     * @param horse_uuid  the horse's UUID
+     */
     public void addSpawnedHorse(UUID owner, Integer horse_id, UUID horse_uuid)
     {
         String sql = "INSERT INTO spawned_horses(" +
@@ -193,6 +245,10 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addSpawnedHorse)");}
     }
 
+    /** When an horse is de-spawned, it should be removed from the database with this method.
+     *
+     * @param  owner the owner's UUID
+     */
     public void removeSpawnedHorse(UUID owner)
     {
         String sql = "DELETE FROM spawned_horses " +
@@ -206,6 +262,14 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeSpawnedHorse)");}
     }
 
+    /** Returns the UUID of an alive horse linked to an owner's UUID.
+     * If there isn't any spawned horse the method will return Optional.empty,
+     * otherwise it will return Optional&lt;UUID&rt;
+     *
+     * @param  owner the owner's UUID
+     * @return  the horse's UUID or Optional.empty
+     * @see java.util.Optional
+     */
     public Optional<UUID> getSpawnedHorseFromOwner(UUID owner)
     {
         String sql = "SELECT horse_uuid " +
@@ -231,6 +295,15 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
+    /** Returns the HorseData of an alive horse linked to an owner's UUID.
+     * If there isn't any spawned horse the method will return Optional.empty,
+     * otherwise it will return Optional&lt;HorseData&rt;
+     *
+     * @param  owner the owner's UUID
+     * @return  the HorseData or Optional.empty
+     * @see HorseData
+     * @see java.util.Optional
+     */
     public Optional<HorseData> getSpawnedHorseDataFromOwner(UUID owner)
     {
         String sql = "SELECT horse_id " +
@@ -256,6 +329,16 @@ public class SQLiteDatabase
 
     /// stables table methods ///
 
+    /** Use this method to create and add a new StableData to the database.
+     *
+     * @param  preview_location the preview horse spawn location
+     * @param  next_preview_sign_location the location of the in-game sign used to look at the next preview
+     * @param  previous_preview_sign_location the location of the in-game sign used to look at the previous preview
+     * @param  buy_horse_sign_location the location of the in-game sign used to buy the previewed horse
+     * @return  the StableData or Optional.empty
+     * @see StableData
+     * @see java.util.Optional
+     */
     public Optional<StableData> addStable(Location preview_location, Location next_preview_sign_location, Location previous_preview_sign_location, Location buy_horse_sign_location)
     {
         String sql = "INSERT INTO stables(" +
@@ -292,6 +375,11 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
+    /** Removes a StableData from the database by the stable id.
+     *
+     * @param  stableId the stable id
+     * @see StableData
+     */
     public void removeStable(Integer stableId)
     {
         String sql = "DELETE FROM stables " +
@@ -305,6 +393,13 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeStable)");}
     }
 
+    /** Gets a StableData from the database by the stable id.
+     *
+     * @param  stableId
+     * @return  the StableData or Optional.empty
+     * @see StableData
+     * @see java.util.Optional
+     */
     public Optional<StableData> getStable(Integer stableId)
     {
         String sql = "SELECT curr_preview_state, " +
@@ -348,6 +443,11 @@ public class SQLiteDatabase
         return Optional.empty();
     }
 
+    /** Changes the current horse skin previewed in the stable.
+     *
+     * @param stableId the stable id
+     * @param newState the new skin id
+     */
     public void setStablePreviewState(Integer stableId, Integer newState)
     {
         String sql = "UPDATE stables " +
@@ -367,6 +467,10 @@ public class SQLiteDatabase
 
     /// general purpose methods ///
 
+    /** This method executes a simple sql query that doesn't expect an output
+     *
+     * @param sql the sql query
+     */
     private void executeStatement(String sql)
     {
         try (Statement stmt = connection.createStatement())
@@ -375,11 +479,26 @@ public class SQLiteDatabase
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (executeStatement)");}
     }
 
-    private static String LocationToString(Location loc)
+    /** This method converts a location to a String.
+     * To convert back the String to a Location use {@link #StringToLocation(String string)}.
+     * <p>
+     * Output example: "world;100;50;-180", where the world name and x, y and z coordinates are separated by a semicolon.
+     *
+     * @param location the Location
+     * @return the String
+     */
+    private static String LocationToString(Location location)
     {
-        return loc.getWorld().getName() + ";" + loc.getBlockX() + ";" + loc.getBlockY() + ";" + loc.getBlockZ();
+        return location.getWorld().getName() + ";" + location.getBlockX() + ";" + location.getBlockY() + ";" + location.getBlockZ();
     }
 
+    /** This method converts a String (possibly generated by {@link #LocationToString(Location location)}).
+     * If the string is in the wrong format, Optional.empty will return otherwise Optional&lt;Location&gt;.
+     *
+     * @param string the String
+     * @return the Location
+     * @see java.util.Optional
+     */
     private static Optional<Location> StringToLocation(String string)
     {
         String[] split = string.split(";");
