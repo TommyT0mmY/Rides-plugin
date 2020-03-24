@@ -1,78 +1,87 @@
 package com.github.tommyt0mmy.rides.storing;
 
-import com.google.gson.JsonObject;
-
 import java.util.UUID;
 
+/** This class is used to hold basic horse variables. */
 public class HorseData
 {
     private String name;
     private UUID owner;
-    private UUID uuid;
-    private double speed;
-    private double health;
+    private int id;
+    private float speed;
+    private byte health;
     private byte skin;
 
-    public HorseData(String name, UUID owner, double speed, double health, byte skin)
+    /** Constructor for HorseData.
+     *
+     * @param name   the display name of the horse
+     * @param id     the database id
+     * @param owner  the UUID of the owner
+     * @param speed  the natural horse speed
+     * @param health the max health of the horse
+     * @param skin   the skin id of the horse
+     */
+    public HorseData(String name, int id, UUID owner, float speed, byte health, byte skin)
     {
         this.name = name;
         this.owner = owner;
         this.speed = speed;
         this.health = health;
         this.skin = skin;
-        this.uuid = UUID.randomUUID();
+        this.id = id;
     }
 
-    public HorseData(JsonObject jsonobject)
+    /** Gets the numeric id.
+     *
+     * @return the numeric id.
+     */
+    public int getId()
     {
-        uuid = UUID.fromString(jsonobject.get("uuid").getAsString());
-        owner = UUID.fromString(jsonobject.get("owner").getAsString());
-        name = jsonobject.get("name").getAsString();
-        speed = jsonobject.get("speed").getAsDouble();
-        health = jsonobject.get("health").getAsDouble();
-        skin = jsonobject.get("skin").getAsByte();
+        return id;
     }
 
-    public UUID getUuid()
-    {
-        return uuid;
-    }
-
+    /** Gets the display name.
+     *
+     * @return the display name
+     */
     public String getName()
     {
         return name;
     }
 
+    /** Gets the UUID of the owner.
+     *
+     * @return the UUID
+     */
     public UUID getOwner()
     {
         return owner;
     }
 
-    public double getSpeed()
+    /** Gets the walking speed.
+     *
+     * @return the walking speed
+     */
+    public float getSpeed()
     {
         return speed;
     }
 
-    public double getHealth()
+    /** Gets the max health.
+     *
+     * @return the max health
+     */
+    public int getHealth()
     {
         return health;
     }
 
+    /** Gets the skin id.
+     *
+     * @return the skin id
+     */
     public byte getSkin()
     {
         return skin;
-    }
-
-    JsonObject toJsonObject()
-    {
-        JsonObject result = new JsonObject();
-        result.addProperty("name", name);
-        result.addProperty("uuid", String.valueOf(uuid));
-        result.addProperty("owner", String.valueOf(owner));
-        result.addProperty("speed", speed);
-        result.addProperty("health", health);
-        result.addProperty("skin", skin);
-
-        return result;
     }
 }

@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RidesGUIEvents implements Listener
@@ -45,42 +46,42 @@ public class RidesGUIEvents implements Listener
             {
                 case HORSE_LIST_BUTTON:
                     Inventory inv = Bukkit.createInventory(p, 45, RidesClass.messages.getGuiTitle("select_horse"));
-                    OwnerData ownerdata = RidesClass.database.getOwnerByUUID(p.getUniqueId());
-                    if (ownerdata == null)
+                    Optional<OwnerData> ownerdata = RidesClass.database.getOwnerData(p.getUniqueId());
+                    if (!ownerdata.isPresent())
                     {
                         p.closeInventory();
                         p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "no_horse_possessed"));
                         return;
                     }
 
-                    ArrayList<UUID> horsesUuid = ownerdata.getHorses();
-                    if (horsesUuid == null)
+                    ArrayList<Integer> horsesIds = ownerdata.get().getHorses();
+                    if (horsesIds == null)
                     {
                         p.closeInventory();
                         p.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.RED, "no_horse_possessed"));
                         return;
                     }
 
-                    for (UUID currHorseUuid : horsesUuid)
+                    for (Integer currHorseId : horsesIds)
                     {
-                        HorseData currHorse = RidesClass.database.getHorseByUUID(currHorseUuid);
-                        if (currHorse == null)
+                        Optional<HorseData> currHorse = RidesClass.database.getHorseData(currHorseId);
+                        if (!currHorse.isPresent())
                             break;
-                        inv.addItem(getEgg(currHorse));
+                        inv.addItem(getEgg(currHorse.get()));
                     }
                     p.openInventory(inv);
 
                     break;
                 case REMOVE_HORSE:
-                    UUID horseUuid = RidesClass.spawnedHorses.get(p);
-                    if (horseUuid == null)
+                    Optional<UUID> horseUuid = RidesClass.database.getSpawnedHorseFromOwner(p.getUniqueId());
+                    if (!horseUuid.isPresent())
                         return;
-                    LivingEntity horse = (LivingEntity) Bukkit.getServer().getEntity(horseUuid);
+                    LivingEntity horse = (LivingEntity) Bukkit.getServer().getEntity(horseUuid.get());
 
                     horse.teleport(new Location(horse.getWorld(), 0, -10, 0));
                     horse.setSilent(true);
                     horse.setHealth(0);
-                    RidesClass.spawnedHorses.remove(p);
+                    RidesClass.database.removeSpawnedHorse(p.getUniqueId());
                     Inventory newInv = p.getOpenInventory().getTopInventory();
                     newInv.setItem(13, new ItemStack(Material.AIR));
                     p.openInventory(newInv);
@@ -94,10 +95,12 @@ public class RidesGUIEvents implements Listener
         else if (e.getView().getTitle().equals(RidesClass.messages.getGuiTitle("select_horse")))
         {
             e.setCancelled(true);
-            NamespacedKey key = new NamespacedKey(RidesClass, "uuid");
-            UUID selectedHorseUuid = UUID.fromString(clickedItem.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.STRING));
-            HorseData horsedata = RidesClass.database.getHorseByUUID(selectedHorseUuid);
-            spawnHorse(horsedata);
+            NamespacedKey key = new NamespacedKey(RidesClass, "id");
+            Integer selectedHorseId = clickedItem.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+            Optional<HorseData> horsedata = RidesClass.database.getHorseData(selectedHorseId);
+            if (!horsedata.isPresent())
+                return;
+            spawnHorse(horsedata.get());
         }
     }
 
@@ -122,8 +125,8 @@ public class RidesGUIEvents implements Listener
         meta.setDisplayName(horsedata.getName());
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_POTION_EFFECTS);
 
-        NamespacedKey key = new NamespacedKey(RidesClass, "uuid");
-        meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, horsedata.getUuid().toString());
+        NamespacedKey key = new NamespacedKey(RidesClass, "id");
+        meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, horsedata.getId());
 
         egg.setItemMeta(meta);
         return egg;
@@ -169,20 +172,23 @@ public class RidesGUIEvents implements Listener
         spawnedHorse.setOwner(owner);
         spawnedHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horsedata.getSpeed());
         spawnedHorse.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(horsedata.getHealth());
-        NamespacedKey uuidkey = new NamespacedKey(RidesClass, "rides_uuid");
-        spawnedHorse.getPersistentDataContainer().set(uuidkey, PersistentDataType.STRING, horsedata.getUuid().toString());
 
-        if (RidesClass.spawnedHorses.get(owner) != null)
+        NamespacedKey idKey = new NamespacedKey(RidesClass, "horse_id");
+        spawnedHorse.getPersistentDataContainer().set(idKey, PersistentDataType.INTEGER, horsedata.getId());
+
+        //removing old horse
+        if (RidesClass.database.getSpawnedHorseFromOwner(owner.getUniqueId()).isPresent())
         {
-            UUID oldHorseUuid = RidesClass.spawnedHorses.get(owner);
+            UUID oldHorseUuid = RidesClass.database.getSpawnedHorseFromOwner(owner.getUniqueId()).get();
             LivingEntity oldHorse = (LivingEntity) Bukkit.getServer().getEntity(oldHorseUuid);
 
-            oldHorse.teleport(new Location(oldHorse.getWorld(), 0, -10, 0));
+            oldHorse.teleport(new Location(oldHorse.getWorld(), oldHorse.getLocation().getX(), -10, oldHorse.getLocation().getZ()));
             oldHorse.setSilent(true);
             oldHorse.setHealth(0);
             owner.sendMessage(RidesClass.messages.formattedChatMessage(ChatColor.GREEN, "horse_replaced"));
         }
-        RidesClass.spawnedHorses.put(owner, spawnedHorse.getUniqueId());
+        RidesClass.database.removeSpawnedHorse(owner.getUniqueId());
+        RidesClass.database.addSpawnedHorse(owner.getUniqueId(), horsedata.getId(), spawnedHorse.getUniqueId());
 
         return spawnedHorse;
     }

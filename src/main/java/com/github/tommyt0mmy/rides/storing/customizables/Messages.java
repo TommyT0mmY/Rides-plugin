@@ -4,7 +4,6 @@ import com.github.tommyt0mmy.rides.Rides;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.util.ChatPaginator;
 
 import java.io.File;
 import java.util.ArrayList;

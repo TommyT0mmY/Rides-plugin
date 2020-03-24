@@ -1,66 +1,51 @@
 package com.github.tommyt0mmy.rides.storing;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * This class is used to hold owners data.
+ *
+ * <p>
+ * To add an horse to an owner use {@link SQLiteDatabase#addHorseData(HorseData)}
+ * then use {@link SQLiteDatabase#getOwnerData(UUID ownerUuid)} to get a new OwnerData object with the new horse.
+ * <p>
+ * To remove an horse from an owner use {@link SQLiteDatabase#removeHorseData(Integer horseId)}
+ * then use {@link SQLiteDatabase#getOwnerData(UUID ownerUuid)} to get a new OwnerData object without the removed horse,
+ * if every horse gets removed, {@link Optional#empty()} will be returned.
+ */
 public class OwnerData
 {
     private UUID uuid;
-    private ArrayList<UUID> horses;
+    private ArrayList<Integer> horses;
 
-    public OwnerData(UUID uuid, ArrayList<UUID> horses)
+    /** Constructor of OwnerData.
+     *
+     * @param uuid the owner UUID
+     * @param horses an array composed of every owned horse's HorseData id
+     */
+    public OwnerData(UUID uuid, ArrayList<Integer> horses)
     {
         this.uuid = uuid;
         this.horses = horses;
     }
 
-    public OwnerData (JsonObject jsonobject)
-    {
-        uuid = UUID.fromString(jsonobject.get("uuid").getAsString());
-        horses = new ArrayList<>();
-        JsonArray horsesJsonArray = jsonobject.getAsJsonArray("horses");
-
-        for (com.google.gson.JsonElement jsonElement : horsesJsonArray) {
-            UUID currUuid = UUID.fromString(jsonElement.getAsString());
-            horses.add(currUuid);
-        }
-    }
-
-    public void setUuid(UUID uuid)
-    {
-        this.uuid = uuid;
-    }
-
-    public void setHorses(ArrayList<UUID> horses)
-    {
-        this.horses = horses;
-    }
-
+    /** Gets the owner UUID.
+     *
+     * @return the UUID
+     */
     public UUID getUuid()
     {
         return uuid;
     }
 
-    public ArrayList<UUID> getHorses()
+    /** Gets an array composed of every owned horse's HorseData id.
+     *
+     * @return the array
+     */
+    public ArrayList<Integer> getHorses()
     {
         return horses;
     }
-
-    JsonObject toJsonObject() {
-        JsonObject result = new JsonObject();
-        JsonArray horses_array = new JsonArray();
-        for (UUID currhorseuuid : horses)
-        {
-            horses_array.add(String.valueOf(currhorseuuid));
-        }
-        result.addProperty("uuid", String.valueOf(uuid));
-        result.add("horses", horses_array);
-
-        return result;
-    }
-
 }
