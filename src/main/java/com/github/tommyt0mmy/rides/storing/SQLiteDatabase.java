@@ -80,14 +80,14 @@ public class SQLiteDatabase
         executeStatement(sql);
 
         //Stables table
-        sql += "CREATE TABLE IF NOT EXISTS stables("
-             + "id INT NOT NULL PRIMARY KEY,"
-             + "curr_preview_state INT NOT NULL,"
-             + "preview_location VARCHAR(255) NOT NULL,"
-             + "next_preview_sign_location VARCHAR(255) NOT NULL,"
-             + "previous_preview_sign_location VARCHAR(255) NOT NULL,"
-             + "buy_horse_sign_location VARCHAR(255) NOT NULL"
-             + ");";
+        sql = "CREATE TABLE IF NOT EXISTS stables("
+            + "id INT NOT NULL PRIMARY KEY,"
+            + "curr_preview_state INT NOT NULL,"
+            + "preview_location VARCHAR(255) NOT NULL,"
+            + "next_preview_sign_location VARCHAR(255) NOT NULL,"
+            + "previous_preview_sign_location VARCHAR(255) NOT NULL,"
+            + "buy_horse_sign_location VARCHAR(255) NOT NULL"
+            + ");";
 
         executeStatement(sql);
     }
@@ -162,13 +162,12 @@ public class SQLiteDatabase
         try(PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             //Generate new id
-            String sql2 = "SELECT MAX(id) FROM stables AS maxId";
+            String getMaxIdQuery = "SELECT MAX(id) AS id FROM horses";
             Statement stmt2 = connection.createStatement();
-            stmt2.execute(sql2);
-            ResultSet maxId_rs = stmt2.getResultSet();
+            ResultSet maxId_rs = stmt2.executeQuery(getMaxIdQuery);
             int newId = 0;
             if (maxId_rs.next())
-                newId = maxId_rs.getInt("maxId") + 1;
+                newId = maxId_rs.getInt("id") + 1;
 
             pstmt.setInt(1, newId);
             pstmt.setString(2, owner.toString());
@@ -370,13 +369,12 @@ public class SQLiteDatabase
         try(PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             //Generate new id
-            String sql2 = "SELECT MAX(id) FROM stables AS maxId";
+            String getMaxIdQuery = "SELECT MAX(id) AS id FROM stables";
             Statement stmt2 = connection.createStatement();
-            stmt2.execute(sql2);
-            ResultSet maxId_rs = stmt2.getResultSet();
+            ResultSet maxId_rs = stmt2.executeQuery(getMaxIdQuery);
             int newId = 0;
             if (maxId_rs.next())
-                newId = maxId_rs.getInt("maxId") + 1;
+                newId = maxId_rs.getInt("id") + 1;
 
             pstmt.setInt(1, newId);
             pstmt.setInt(2, 0);
