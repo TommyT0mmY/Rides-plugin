@@ -12,7 +12,7 @@ public class Rides extends JavaPlugin {
 
     private static Rides instance;
     public Logger console = getLogger();
-    public SQLiteDatabase database;
+    public static SQLiteDatabase database;
     public Messages messages;
 
     public static Rides getInstance() {

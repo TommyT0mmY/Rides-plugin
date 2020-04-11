@@ -13,38 +13,26 @@ import java.util.UUID;
 /** This class defines the plugin's database behaviour. */
 public class SQLiteDatabase
 {
-    Rides RidesClass = Rides.getInstance();
+    static Rides RidesClass = Rides.getInstance();
 
-    private final String url = "jdbc:sqlite:" + RidesClass.getDataFolder().getAbsolutePath() + "\\database.db";
-    private Connection connection;
+    static private String url = "jdbc:sqlite:" + RidesClass.getDataFolder().getAbsolutePath() + "\\database.db";
 
     /** Creates a new database connection */
     public SQLiteDatabase()
     {
-        initDatabase();
         clearTable("spawned_horses");
     }
 
 
     /// setup methods ///
 
-    /** A setup method that should be only called by the constructor */
-    private void initDatabase()
-    {
-        try
-        {
-            connection = DriverManager.getConnection(url);
-
-            if (connection != null)
-            {
-                DatabaseMetaData meta = connection.getMetaData();
-                RidesClass.console.info("The driver name is " + meta.getDriverName());
-                initTables();
-            }
-        } catch (SQLException e)
-        {
-            RidesClass.console.severe(e.getMessage() + " (initDatabase)");
+    /** Used to get a connection to the database */
+    static Connection c;
+    public static Connection getConn() throws SQLException {
+        if(c == null || c.isClosed()) {
+            c = DriverManager.getConnection(url);
         }
+        return c;
     }
 
     /** A method that creates every necessary table and should be only called by the constructor.
@@ -121,7 +109,9 @@ public class SQLiteDatabase
         String sql = "SELECT owner_uuid, name, speed, health, skin "
                    + "FROM horses "
                    + "WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+
+
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, horse_id);
             ResultSet rs = pstmt.executeQuery();
@@ -133,6 +123,8 @@ public class SQLiteDatabase
             float speed = rs.getFloat("speed");
             byte health = rs.getByte("health");
             byte skin = rs.getByte("skin");
+
+            connection.close();
 
             return Optional.of(new HorseData(name, horse_id, owner_uuid, speed, health, skin));
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getHorseData)");}
@@ -159,7 +151,7 @@ public class SQLiteDatabase
                       "skin) " +
                       "VALUES(?, ?, ?, ?, ?, ?)";
 
-        try(PreparedStatement pstmt = connection.prepareStatement(sql))
+        try(Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             //Generate new id
             String getMaxIdQuery = "SELECT MAX(id) AS id FROM horses";
@@ -177,6 +169,8 @@ public class SQLiteDatabase
             pstmt.setByte(6, skin);
 
             pstmt.execute();
+            pstmt.close();
+            connection.close();
 
             return getHorseData(newId);
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addHorseData)");}
@@ -193,11 +187,14 @@ public class SQLiteDatabase
         String sql = "DELETE FROM horses " +
                      "WHERE id = ?";
 
-        try(PreparedStatement pstmt = connection.prepareStatement(sql))
+        try(Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, id);
 
             pstmt.execute();
+            pstmt.close();
+            connection.close();
+
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeHorseData)");}
     }
 
@@ -219,7 +216,7 @@ public class SQLiteDatabase
                      "FROM horses " +
                      "WHERE owner_uuid = ?";
 
-        try (PreparedStatement pstmt  = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt  = connection.prepareStatement(sql))
         {
             pstmt.setString(1, ownerUuid.toString());
 
@@ -229,6 +226,11 @@ public class SQLiteDatabase
             {
                 horses.add(rs.getInt("id"));
             }
+
+            rs.close();
+            pstmt.close();
+            connection.close();
+
             return Optional.of(new OwnerData(ownerUuid, horses));
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (getOwnerData)");}
         return Optional.empty();
@@ -250,13 +252,17 @@ public class SQLiteDatabase
                      "horse_uuid) " +
                      "VALUES(?, ?, ?)";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setString(1, owner.toString());
             pstmt.setInt(2, horse_id);
             pstmt.setString(3, horse_uuid.toString());
 
             pstmt.execute();
+
+            pstmt.close();
+            connection.close();
+
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (addSpawnedHorse)");}
     }
 
@@ -269,11 +275,15 @@ public class SQLiteDatabase
         String sql = "DELETE FROM spawned_horses " +
                      "WHERE owner_uuid = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setString(1, owner.toString());
 
             pstmt.execute();
+
+            pstmt.close();
+            connection.close();
+
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeSpawnedHorse)");}
     }
 
@@ -291,7 +301,7 @@ public class SQLiteDatabase
                      "FROM spawned_horses " +
                      "WHERE owner_uuid = ?";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement preparedStatement = connection.prepareStatement(sql))
         {
             preparedStatement.setString(1, owner.toString());
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -299,8 +309,12 @@ public class SQLiteDatabase
             if(!resultSet.next())
                 return Optional.empty();
 
-            return Optional.of(UUID.fromString(resultSet.getString("horse_uuid")));
+            UUID horse_uuid = UUID.fromString(resultSet.getString("horse_uuid"));
 
+            resultSet.close();
+            connection.close();
+
+            return Optional.of(horse_uuid);
         }
         catch(SQLException e)
         {
@@ -325,7 +339,7 @@ public class SQLiteDatabase
                      "FROM spawned_horses " +
                      "WHERE owner_uuid = ?";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement preparedStatement = connection.prepareStatement(sql))
         {
             preparedStatement.setString(1, owner.toString());
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -333,7 +347,12 @@ public class SQLiteDatabase
             if(!resultSet.next())
                 return Optional.empty();
 
-            return getHorseData(resultSet.getInt("horse_id"));
+            int horse_id = resultSet.getInt("horse_id");
+
+            resultSet.close();
+            connection.close();
+
+            return getHorseData(horse_id);
 
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (getSpawnedHorseDataFromOwner)");}
 
@@ -366,7 +385,7 @@ public class SQLiteDatabase
                      "buy_horse_sign_location) " +
                      "VALUES(?, ?, ?, ?, ?, ?)";
 
-        try(PreparedStatement pstmt = connection.prepareStatement(sql))
+        try(Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             //Generate new id
             String getMaxIdQuery = "SELECT MAX(id) AS id FROM stables";
@@ -385,6 +404,10 @@ public class SQLiteDatabase
 
             pstmt.execute();
 
+            pstmt.close();
+            maxId_rs.close();
+            connection.close();
+
             return getStable(newId);
         } catch(SQLException e) {RidesClass.console.severe(e.getMessage() + " (addStable)");}
         return Optional.empty();
@@ -400,11 +423,14 @@ public class SQLiteDatabase
         String sql = "DELETE FROM stables " +
                      "WHERE id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, stableId);
 
             pstmt.execute();
+
+            pstmt.close();
+            connection.close();
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (removeStable)");}
     }
 
@@ -425,12 +451,13 @@ public class SQLiteDatabase
                      "FROM stables " +
                      "WHERE id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, stableId);
             pstmt.execute();
 
             ResultSet resultSet = pstmt.getResultSet();
+
             if (!resultSet.next())
                 return Optional.empty();
 
@@ -469,12 +496,16 @@ public class SQLiteDatabase
                      "SET curr_preview_state = ? " +
                      "WHERE id = ?";
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql))
+        try (Connection connection = getConn(); PreparedStatement pstmt = connection.prepareStatement(sql))
         {
             pstmt.setInt(1, newState);
             pstmt.setInt(2, stableId);
 
             pstmt.execute();
+
+            pstmt.close();
+            connection.close();
+
         } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (setStablePreviewState)");}
     }
 
@@ -488,10 +519,12 @@ public class SQLiteDatabase
      */
     private void executeStatement(String sql)
     {
-        try (Statement stmt = connection.createStatement())
+        try (Connection connection = getConn(); Statement stmt = connection.createStatement())
         {
             stmt.execute(sql);
-        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (executeStatement)");}
+            stmt.close();
+            connection.close();
+        } catch (SQLException e) {RidesClass.console.severe(e.getMessage() + " (" + sql + ")");}
     }
 
     /** This method converts a location to a String.
